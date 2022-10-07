@@ -8,6 +8,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class CamAlarmFilesFilters
 {
@@ -50,7 +51,7 @@ class CamAlarmFilesFilters
     }
 
 
-    public function sortFiles($dir, $pageSize=15, $page=null, $options=[])
+    public function sortFiles($dir, $pageSize=10000, $page=null, $options=[])
     {
         return $this->paginate(collect(File::allFiles($dir))
             ->filter(function ($file) {
@@ -62,7 +63,7 @@ class CamAlarmFilesFilters
             ->map(function ($file) {
                 return [
                     'origPath'=>$file->getBaseName(),
-                    'imgpath'=>preg_replace('~[^\.]+storage~i', '/assets/pics', $file->getPathName()),
+                    'imgpath'=>env("REMOTE_HOST").preg_replace('~[^\.]+storage~i', '/assets/pics', $file->getPathName()),
                     'path'=>$file->getPath(),
                     'date'=>Carbon::createFromTimestamp($file->getMTime()),
                     'realPathName'=>$file->getRealPath()];
@@ -89,13 +90,19 @@ class CamAlarmFilesFilters
 
     public function sortFolders($filesPath)
     {
-        $camFolders = File::directories($filesPath);
+
         $folders=[];
-        foreach ($camFolders as $foldePath) {
-            if (!preg_match('~day-~i', class_basename($foldePath))) continue;
+        foreach ($filesPath as $foldePath) {
+
+            $files = File::allFiles($foldePath);
+            $basename = class_basename($foldePath);
+            if (!preg_match('~day-~i', $basename)) {
+                $timeStamp = Carbon::parse($basename);
+            }else{
             $folderName = str_replace('day-', '', class_basename($foldePath));
             $timeStamp = Carbon::parse($folderName);
-            $folders[$timeStamp->timestamp] = ['date' => $timeStamp->format('d-m-Y'), 'origPath' => $foldePath, 'folder' => $folderName];
+            }
+            $folders[$timeStamp->timestamp] = ['size'=>count($files), 'date' => $timeStamp->format('d-m-Y'), 'origPath' => $foldePath, 'folder' => $basename];
         }
         krsort($folders);
         return $folders;

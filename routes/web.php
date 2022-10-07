@@ -22,6 +22,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('pics', ['uses' => 'FilesServer@allCamFiles']);
     $router->get('pics/{id}', ['uses' => 'FilesServer@showFiles']);
     $router->get('/allfiles/', ['uses' => 'FilesServer@allCamFiles']);
+    $router->get('/allfiles/total', ['uses' => 'FilesServer@getTotalStats']);
     $router->get('/allfiles/details', ['uses' => 'FilesServer@allFilesDetails']);
+    $router->get('/showfolder/{folder}', ['uses' => 'FilesServer@allFilesInFolder']);
 
 });

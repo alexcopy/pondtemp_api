@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\PageNotFound;
 use App\Http\Services\CamAlarmFilesFilters;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\JsonResponse;
@@ -13,22 +14,25 @@ class FilesServer extends Controller
 
     public function allCamFiles(Request $request): JsonResponse
     {
-
         $ftpDir = storage_path('ftp');
         $camIdsList = File::directories($ftpDir);
-
+        $date = Carbon::now()->format('Ymd');
         $dirFiles = [];
         $dirFiles['files'] = [];
-
         foreach ($camIdsList as $dir) {
             $filesPath = $dir . '/today';
+            $megaCamFilesPath = $filesPath . '/' . $date . '/images';
             $basename = File::basename($dir);
             if (!File::exists($filesPath)) {
                 File::makeDirectory($filesPath);
             }
-            $dirFiles['files'][$basename] = File::allFiles($filesPath);
-            $dirFiles['dirs'][$basename] = File::directories($dir);
-            $dirFiles['changed'][$basename] = File::lastModified($filesPath);
+            if (File::exists($megaCamFilesPath))
+                $modified = time() - File::lastModified($megaCamFilesPath);
+            else
+                $modified = time() - File::lastModified($filesPath);
+            $dirFiles['files_count'][$basename] = count(File::allFiles($filesPath));
+            $dirFiles['dirs'][$basename] = [];
+            $dirFiles['changed'][$basename] = $modified;
             $dirFiles['size'][$basename] = self::human_folderSize($filesPath);
         }
         $tableStats = [];
@@ -38,7 +42,7 @@ class FilesServer extends Controller
 
     protected function showFiles($filesPath, Request $request)
     {
-        $pagesize = 60;
+        $pagesize = 10000;
         $page = $request->get('page', 0);
         $camFiles = new CamAlarmFilesFilters;
         $title = '  Show Folder ' . $request->get('folder', null)
@@ -48,36 +52,63 @@ class FilesServer extends Controller
             'query' => $request->toArray(),
             'path' => '/' . $request->path(),
         ]);
-        return view('pages.camssnapshots', compact(['pictures', 'title']));
+        return response()->json(['pictures' => $pictures, 'title' => $title]);
     }
 
-    protected function showFolders($folderPath, Request $request)
+
+    public function getTotalStats()
     {
-        $pageSize = 10;
-        $folderName = $request->get('folder', null);
-        $page = $request->get('page', 0);
-        $camFiles = new CamAlarmFilesFilters;
-        $sortedFolders = $camFiles->sortFolders($folderPath);
-        $result = $camFiles->paginate($sortedFolders, $pageSize, $page, [
-            'query' => $request->toArray(),
-            'path' => '/' . $request->path(),
+        $ftpDir = storage_path('ftp');
+        $dirList = File::directories($ftpDir);
+        $result = collect();
+        foreach ($dirList as $cam) {
+            $filesPath = $cam;
+            $directories = File::directories($filesPath);
+            $result->push([
+                'camname' => basename($cam),
+                'dirs' => count($directories),
+                'size' => 0
+            ]);
+        }
+        return response()->json([
+            'data' => $result,
+            'stats' => [
+                'alldirs' => 0,
+                'dirscount' => $result->sum('dirs')]
         ]);
-        return view('pages.deatails', compact(['result', 'folderName']));
+    }
+
+
+    public function allFilesInFolder($folder, Request $request)
+    {
+        $folderPath = storage_path("ftp/$folder");
+        $dirList = File::directories($folderPath);
+
+        foreach ($dirList as $k => $v) {
+            if (preg_match("~today~i", $v)) {
+                unset($dirList[$k]);
+            }
+        }
+        $sortFolders = (new CamAlarmFilesFilters())->sortFolders($dirList);
+        return response()->json(['result' => $sortFolders, 'folderName' => $folder]);
     }
 
     public function allFilesDetails(Request $request)
     {
+
         $query = $request->get('q', null);
         $camname = $request->get('folder', null);
-        $camera = Cameras::where('name', $camname)->get()->first();
-        $folder = optional($camera)->realpath;
+        $filesPath = realpath(storage_path("ftp/{$camname}"));
+
         $subfolder = $request->get('subfolder', null);
-        if (!$query || (!$folder)) {
+
+
+        if (!$query || (!File::exists($filesPath))) {
             throw new \Exception('please specify query');
         }
 
+
         try {
-            $filesPath = storage_path('ftp/' . $folder);
             if ($query == 'showtoday') {
                 return $this->showFiles($filesPath . '/today', $request);
             } elseif ($query == 'showfolders') {
