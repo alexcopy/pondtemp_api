@@ -14,7 +14,7 @@ class FilesServer extends Controller
 
     public function allCamFiles(Request $request): JsonResponse
     {
-        $ftpDir = storage_path('ftp');
+        $ftpDir = storage_path(env('PICS'));
         $camIdsList = File::directories($ftpDir);
         $date = Carbon::now()->format('Ymd');
         $dirFiles = [];

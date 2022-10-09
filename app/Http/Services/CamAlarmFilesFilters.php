@@ -63,7 +63,7 @@ class CamAlarmFilesFilters
             ->map(function ($file) {
                 return [
                     'origPath'=>$file->getBaseName(),
-                    'imgpath'=>env("REMOTE_HOST").preg_replace('~[^\.]+storage~i', '/assets/pics', $file->getPathName()),
+                    'imgpath'=>env("REMOTE_HOST"),
                     'path'=>$file->getPath(),
                     'date'=>Carbon::createFromTimestamp($file->getMTime()),
                     'realPathName'=>$file->getRealPath()];
