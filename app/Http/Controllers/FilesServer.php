@@ -83,13 +83,18 @@ class FilesServer extends Controller
     {
         $folderPath = storage_path(env("PICS", "pics")."/$folder");
         $dirList = File::directories($folderPath);
-
+        $folders=[];
         foreach ($dirList as $k => $v) {
             if (preg_match("~today~i", $v)) {
                 unset($dirList[$k]);
+                continue;
             }
+            $folderName = str_replace('day-', '', class_basename($v));
+            $timeStamp = Carbon::parse($folderName);
+            $folders[$timeStamp->timestamp]=$v;
         }
-        $sortFolders = (new CamAlarmFilesFilters())->sortFolders($dirList, $request);
+        ksort($folders);
+        $sortFolders = (new CamAlarmFilesFilters())->sortFolders(array_values($folders), $request);
         return response()->json(['result' => $sortFolders, 'folderName' => $folder]);
     }
 
