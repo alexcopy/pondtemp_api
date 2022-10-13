@@ -98,13 +98,11 @@ class CamAlarmFilesFilters
             $start = 0;
         }
         $page_size = $request->get('page_size', 30);
-        $pages_range = range($start * $page_size, $start * $page_size + $page_size);
-
+        $page_range = $start * $page_size + $page_size;
+        $pages_range = range($start * $page_size, $page_range);
         foreach ($filesPath as $key => $foldePath) {
-
             if (in_array($key, $pages_range)) {
                 $files = File::allFiles($foldePath);
-
             } else {
                 $files = [];
             }
