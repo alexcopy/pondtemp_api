@@ -81,7 +81,7 @@ class FilesServer extends Controller
 
     public function allFilesInFolder($folder, Request $request)
     {
-        $folderPath = storage_path("ftp/$folder");
+        $folderPath = storage_path(env("PICS", "pics")."/$folder");
         $dirList = File::directories($folderPath);
 
         foreach ($dirList as $k => $v) {
@@ -89,7 +89,7 @@ class FilesServer extends Controller
                 unset($dirList[$k]);
             }
         }
-        $sortFolders = (new CamAlarmFilesFilters())->sortFolders($dirList);
+        $sortFolders = (new CamAlarmFilesFilters())->sortFolders($dirList, $request);
         return response()->json(['result' => $sortFolders, 'folderName' => $folder]);
     }
 
@@ -98,7 +98,7 @@ class FilesServer extends Controller
 
         $query = $request->get('q', null);
         $camname = $request->get('folder', null);
-        $filesPath = realpath(storage_path("ftp/{$camname}"));
+        $filesPath = realpath(storage_path(env("PICS", "pics")."/{$camname}"));
 
         $subfolder = $request->get('subfolder', null);
 
