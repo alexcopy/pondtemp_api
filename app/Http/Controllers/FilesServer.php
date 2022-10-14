@@ -33,7 +33,7 @@ class FilesServer extends Controller
             $dirFiles['files_count'][$basename] = count(File::allFiles($filesPath));
             $dirFiles['dirs'][$basename] = [];
             $dirFiles['changed'][$basename] = $modified;
-            $dirFiles['size'][$basename] = self::human_folderSize($filesPath);
+            $dirFiles['size'][$basename] = 0;
         }
         $tableStats = [];
 
@@ -126,11 +126,10 @@ class FilesServer extends Controller
 
     public static function human_folderSize($path, $h = 'h', $total = ' ')
     {
-// $total='--total'
         if (!in_array(trim($total), [' ', '', '--total'])) return '0 KB';
-//        $io = exec('/usr/bin/du -sk' . $h . '  ' . $total . ' ' . $path);
-//        $sizes = explode("\t", $io);
-        return 0; //$sizes[0];
+        $io = exec('/usr/bin/du -sk' . $h . '  ' . $total . ' ' . $path);
+        $sizes = explode("\t", $io);
+        return  $sizes[0];
     }
 
     public static function getHumanFoldersSize(array $folders)

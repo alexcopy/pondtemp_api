@@ -3,6 +3,7 @@
 namespace App\Http\Services;
 
 
+use App\Http\Controllers\FilesServer;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
@@ -124,7 +125,7 @@ class CamAlarmFilesFilters
             $page_range = $start * $page_size + $page_size;
             $pages_range = range($start * $page_size, $page_range);
             if (in_array($count, $pages_range)) {
-                $v['size'] = File::size($v['origPath']);
+                $v['size'] = FilesServer::human_folderSize($v['origPath']);
                 $v['qty'] = count(File::allFiles($v['origPath']));
             }
             $v['origPath'] = class_basename($v['origPath']);
