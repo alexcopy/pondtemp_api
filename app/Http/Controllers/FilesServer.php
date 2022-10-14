@@ -81,7 +81,7 @@ class FilesServer extends Controller
 
     public function allFilesInFolder($folder, Request $request)
     {
-        $folderPath = storage_path(env("PICS", "pics")."/$folder");
+        $folderPath = storage_path(env("PICS", "pics") . "/$folder");
         $dirList = File::directories($folderPath);
 
         foreach ($dirList as $k => $v) {
@@ -91,24 +91,19 @@ class FilesServer extends Controller
         }
         $camAlarmFilesFilters = new CamAlarmFilesFilters();
         $sortFolders = $camAlarmFilesFilters->sortFolders($dirList, $request);
-        $sortFolders= $camAlarmFilesFilters->add_folder_size($sortFolders, $request);
+        $sortFolders = $camAlarmFilesFilters->add_folder_size($sortFolders, $request);
         return response()->json(['result' => $sortFolders, 'folderName' => $folder]);
     }
 
     public function allFilesDetails(Request $request)
     {
-
         $query = $request->get('q', null);
         $camname = $request->get('folder', null);
-        $filesPath = realpath(storage_path(env("PICS", "pics")."/{$camname}"));
-
+        $filesPath = realpath(storage_path(env("PICS", "pics") . "/{$camname}"));
         $subfolder = $request->get('subfolder', null);
-
-
         if (!$query || (!File::exists($filesPath))) {
             throw new \Exception('please specify query');
         }
-
 
         try {
             if ($query == 'showtoday') {
@@ -129,25 +124,7 @@ class FilesServer extends Controller
         if (!in_array(trim($total), [' ', '', '--total'])) return '0 KB';
         $io = exec('/usr/bin/du -sk' . $h . '  ' . $total . ' ' . $path);
         $sizes = explode("\t", $io);
-        return  $sizes[0];
+        return $sizes[0];
     }
 
-    public static function getHumanFoldersSize(array $folders)
-    {
-        if (empty($folders)) return '0 kb';
-        $path = implode('  ', $folders);
-        return self::human_folderSize($path, 'h', ' --total');
-    }
-
-
-    /**
-     * Handle the incoming request.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function __invoke(Request $request)
-    {
-        //
-    }
 }

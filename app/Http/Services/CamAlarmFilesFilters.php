@@ -15,44 +15,6 @@ use Illuminate\Support\Facades\Storage;
 class CamAlarmFilesFilters
 {
 
-
-    public static function fileNameIsKeyToSort(array $alarmFiles, $camType, $direction = 'desc')
-    {
-        $parsedFileName = [];
-        foreach ($alarmFiles as $key => $file) {
-            $alarmFile = $file->getPathName();
-            $keys = explode('_', $alarmFile);
-            if (($camType == 'koridor') || (count($keys) <= 1)) {
-                $keys = preg_replace('~Koridor-20\d\d\-~i', '', $alarmFile);
-                $keys = [str_replace('-', '', $alarmFile)];
-            }
-            $sortArg = self::getSortArgBasedOnCamType($camType);
-            if (isset($keys[$sortArg])) {
-                $parsedFileName[$keys[$sortArg]] = $file;
-            }
-        }
-
-        if ($direction == 'desc') {
-            krsort($parsedFileName, SORT_NUMERIC);
-        } else {
-            ksort($parsedFileName, SORT_NUMERIC);
-        }
-        return $parsedFileName;
-    }
-
-    protected static function getSortArgBasedOnCamType($camType)
-    {
-        if (in_array($camType, ['mamacam', 'pond'])) {
-            return 2;
-        } elseif (in_array($camType, [32177699, 34568373])) {
-            return 1;
-        } else {
-            return 0;
-        }
-
-    }
-
-
     public function sortFiles($dir, $pageSize = 10000, $page = null, $options = [])
     {
         return $this->paginate(collect(File::allFiles($dir))
@@ -116,12 +78,13 @@ class CamAlarmFilesFilters
     public function add_folder_size(array $folder_list, Request $request): array
     {
         $count = 0;
-        array_walk($folder_list, function (&$v, $k) use (&$count, $request) {
-            $start = $page_number = $request->get('page', 1);
+        $page_number = $request->get('page', 1);
+        $page_size = $request->get('page_size', 10);
+        array_walk($folder_list, function (&$v, $k) use (&$count, $request, $page_number, $page_size) {
+            $start =$page_number;
             if ($page_number == 1) {
                 $start = 0;
             }
-            $page_size = $request->get('page_size', 30);
             $page_range = $start * $page_size + $page_size;
             $pages_range = range($start * $page_size, $page_range);
             if (in_array($count, $pages_range)) {
