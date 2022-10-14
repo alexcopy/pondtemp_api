@@ -101,7 +101,7 @@ class CamAlarmFilesFilters
                 $folderName = str_replace('day-', '', class_basename($foldePath));
                 $timeStamp = Carbon::parse($folderName);
             }
-            $folders[$timeStamp->timestamp] = ['size' => 0, 'date' => $timeStamp->format('d-m-Y'), 'origPath' => $foldePath, 'folder' => $basename];
+            $folders[$timeStamp->timestamp] = ['size' => 0, 'qty' => 0, 'date' => $timeStamp->format('d-m-Y'), 'origPath' => $foldePath, 'folder' => $basename];
         }
         krsort($folders);
         return $folders;
@@ -124,9 +124,10 @@ class CamAlarmFilesFilters
             $page_range = $start * $page_size + $page_size;
             $pages_range = range($start * $page_size, $page_range);
             if (in_array($count, $pages_range)) {
-                $v['size'] = count(File::allFiles($v['origPath']));
+                $v['size'] = File::size($v['origPath']);
+                $v['qty'] = count(File::allFiles($v['origPath']));
             }
-            $v['origPath']=class_basename($v['origPath']);
+            $v['origPath'] = class_basename($v['origPath']);
             $count++;
         });
         return $folder_list;
