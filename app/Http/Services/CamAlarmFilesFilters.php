@@ -92,20 +92,8 @@ class CamAlarmFilesFilters
     public function sortFolders($filesPath, Request $request)
     {
         $folders = [];
-        $start = $page_number = $request->get('page', 1);
-
-        if ($page_number == 1) {
-            $start = 0;
-        }
-        $page_size = $request->get('page_size', 30);
-        $page_range = $start * $page_size + $page_size;
-        $pages_range = range($start * $page_size, $page_range);
         foreach ($filesPath as $key => $foldePath) {
-            if (in_array($key, $pages_range)) {
-                $files = File::allFiles($foldePath);
-            } else {
-                $files = [];
-            }
+
             $basename = class_basename($foldePath);
             if (!preg_match('~day-~i', $basename)) {
                 $timeStamp = Carbon::parse($basename);
@@ -113,9 +101,36 @@ class CamAlarmFilesFilters
                 $folderName = str_replace('day-', '', class_basename($foldePath));
                 $timeStamp = Carbon::parse($folderName);
             }
-            $folders[$timeStamp->timestamp] = ['size' => count($files), 'date' => $timeStamp->format('d-m-Y'), 'origPath' => $foldePath, 'folder' => $basename];
+            $folders[$timeStamp->timestamp] = ['size' => 0, 'date' => $timeStamp->format('d-m-Y'), 'origPath' => $foldePath, 'folder' => $basename];
         }
         krsort($folders);
         return $folders;
     }
+
+    /**
+     * @param array $folder_list
+     * @param Request $request
+     * @return array
+     */
+    public function add_folder_size(array $folder_list, Request $request): array
+    {
+        $count = 0;
+        array_walk($folder_list, function (&$v, $k) use (&$count, $request) {
+            $start = $page_number = $request->get('page', 1);
+            if ($page_number == 1) {
+                $start = 0;
+            }
+            $page_size = $request->get('page_size', 30);
+            $page_range = $start * $page_size + $page_size;
+            $pages_range = range($start * $page_size, $page_range);
+            if (in_array($count, $pages_range)) {
+                $v['size'] = count(File::allFiles($v['origPath']));
+            }
+            $v['origPath']=class_basename($v['origPath']);
+            $count++;
+        });
+        return $folder_list;
+    }
 }
+
+
