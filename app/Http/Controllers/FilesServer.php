@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\JsonResponse;
+use SebastianBergmann\Diff\Exception;
 
 class FilesServer extends Controller
 {
@@ -31,9 +32,9 @@ class FilesServer extends Controller
             else
                 $modified = time() - File::lastModified($filesPath);
             $dirFiles['files_count'][$basename] = count(File::allFiles($filesPath));
-            $dirFiles['dirs'][$basename] =  $this->getDirList($dir);;
+            $dirFiles['dirs'][$basename] = $this->getDirList($dir);
             $dirFiles['changed'][$basename] = $modified;
-            $dirFiles['size'][$basename] =  0;
+            $dirFiles['size'][$basename] = 0;
         }
         $tableStats = [];
 
@@ -126,14 +127,21 @@ class FilesServer extends Controller
      */
     public function getDirList($folder): array
     {
-        $folderPath = storage_path(env("PICS", "pics") . "/$folder");
-        $dirList = File::directories($folderPath);
-
-        foreach ($dirList as $k => $v) {
-            if (preg_match("~today~i", $v)) {
-                unset($dirList[$k]);
-            }
+        if (!File::exists($folder)) {
+            $folder = storage_path(env("PICS", "pics") . "/$folder");
         }
+        try {
+            $dirList = File::directories($folder);
+            foreach ($dirList as $k => $v) {
+                if (preg_match("~today~i", $v)) {
+                    unset($dirList[$k]);
+                }
+            }
+
+        } catch (Exception $e) {
+            $dirList = [];
+        }
+
         return $dirList;
     }
 
