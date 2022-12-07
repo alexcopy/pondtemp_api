@@ -31,9 +31,9 @@ class FilesServer extends Controller
             else
                 $modified = time() - File::lastModified($filesPath);
             $dirFiles['files_count'][$basename] = count(File::allFiles($filesPath));
-            $dirFiles['dirs'][$basename] = [];
+            $dirFiles['dirs'][$basename] =  $this->getDirList($dir);;
             $dirFiles['changed'][$basename] = $modified;
-            $dirFiles['size'][$basename] = 0;
+            $dirFiles['size'][$basename] =  0;
         }
         $tableStats = [];
 
@@ -81,14 +81,7 @@ class FilesServer extends Controller
 
     public function allFilesInFolder($folder, Request $request)
     {
-        $folderPath = storage_path(env("PICS", "pics") . "/$folder");
-        $dirList = File::directories($folderPath);
-
-        foreach ($dirList as $k => $v) {
-            if (preg_match("~today~i", $v)) {
-                unset($dirList[$k]);
-            }
-        }
+        $dirList = $this->getDirList($folder);
         $camAlarmFilesFilters = new CamAlarmFilesFilters();
         $sortFolders = $camAlarmFilesFilters->sortFolders($dirList, $request);
         $sortFolders = $camAlarmFilesFilters->add_folder_size($sortFolders, $request);
@@ -125,6 +118,23 @@ class FilesServer extends Controller
         $io = exec('/usr/bin/du -sk' . $h . '  ' . $total . ' ' . $path);
         $sizes = explode("\t", $io);
         return $sizes[0];
+    }
+
+    /**
+     * @param $folder
+     * @return array
+     */
+    public function getDirList($folder): array
+    {
+        $folderPath = storage_path(env("PICS", "pics") . "/$folder");
+        $dirList = File::directories($folderPath);
+
+        foreach ($dirList as $k => $v) {
+            if (preg_match("~today~i", $v)) {
+                unset($dirList[$k]);
+            }
+        }
+        return $dirList;
     }
 
 }
