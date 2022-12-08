@@ -32,7 +32,7 @@ class FilesServer extends Controller
             else
                 $modified = time() - File::lastModified($filesPath);
             $dirFiles['files_count'][$basename] = count(File::allFiles($filesPath));
-            $dirFiles['dirs'][$basename] = $this->getDirList($dir);
+            $dirFiles['dirs'][$basename] = count($this->getDirList($dir));
             $dirFiles['changed'][$basename] = $modified;
             $dirFiles['size'][$basename] = 0;
         }
