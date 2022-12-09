@@ -43,13 +43,13 @@ class FilesServer extends Controller
 
     protected function showFiles($filesPath, Request $request)
     {
-        $pagesize = 10000;
+        $page_size = $request->get('limit', 10000);
         $page = $request->get('page', 0);
         $camFiles = new CamAlarmFilesFilters;
         $title = '  Show Folder ' . $request->get('folder', null)
             . '  and subfolder '
             . $request->get('subfolder', null) . ' ';
-        $pictures = $camFiles->sortFiles($filesPath, $pagesize, $page, [
+        $pictures = $camFiles->sortFiles($filesPath, $page_size, $page, [
             'query' => $request->toArray(),
             'path' => '/' . $request->path(),
         ]);
