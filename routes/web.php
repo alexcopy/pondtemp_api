@@ -15,9 +15,8 @@
 
 use App\Http\Controllers\FilesServer;
 
-$router->get('/', function () use ($router) {
-    return $router->app->version();
-});
+
+
 $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('pics', ['uses' => 'FilesServer@allCamFiles']);
     $router->get('pics/{id}', ['uses' => 'FilesServer@showFiles']);
@@ -27,3 +26,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     $router->get('/showfolder/{folder}', ['uses' => 'FilesServer@allFilesInFolder']);
 
 });
+
+$router->get('/{any:.*}', function ($any) use ($router) {
+    return json_encode(["response" => "bad request"]);
+});
+
