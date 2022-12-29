@@ -28,9 +28,10 @@ class CamAlarmFilesFilters
                 return [
                     'origPath' => $file->getBaseName(),
                     'imgpath' => env("REMOTE_HOST") . preg_replace('~^\/.+ftp\/~i', '', $file->getPath()) . '/' . $file->getBaseName(),
-                    'path' => $file->getPath(),
+                    'path' => '',
                     'date' => Carbon::createFromTimestamp($file->getMTime()),
-                    'realPathName' => $file->getRealPath()];
+                    'realPathName' => ''
+                ];
             }), $pageSize, $page, $options);
     }
 
