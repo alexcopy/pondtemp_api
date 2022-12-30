@@ -85,13 +85,13 @@ class FilesServer extends Controller
         $dirList = $this->getDirList($folder);
         $camAlarmFilesFilters = new CamAlarmFilesFilters();
         $sortFolders = $camAlarmFilesFilters->sortFolders($dirList, $request);
-        $sortFolders = $camAlarmFilesFilters->add_folder_size($sortFolders, $request);
+        $paginated = $camAlarmFilesFilters->add_folder_size($sortFolders, $request);
         $page_size = $request->get('limit', 10000);
         $page = $request->get('page', 0);
-
-//        print_r($camAlarmFilesFilters->paginate_folders($sortFolders,  $page_size, $page));
-
-        return response()->json(['result' => $sortFolders, 'folderName' => $folder]);
+        if (! in_array($page_size, [500,10000])){
+          $paginated = $camAlarmFilesFilters->paginate_folders($sortFolders, $page_size, $page, $request);
+        }
+        return response()->json(['result' => $paginated, 'folderName' => $folder]);
     }
 
     public function allFilesDetails(Request $request)

@@ -98,18 +98,13 @@ class CamAlarmFilesFilters
     }
 
 
-    public function paginate_folders($items, $pageSize, $page, $options=[])
+    public function paginate_folders($items, $pageSize, $page, $request)
     {
-        return $this->paginate(collect($items)
-            ->sortBy(function ($file) {
-                return $file;
-            })
-            ->map(function ($file)  {
-                return [
-                    'origPath' => $file,
-
-                ];
-            }), $pageSize, $page, $options);
+        $camFiles = new CamAlarmFilesFilters;
+        return $camFiles->paginate($items, $pageSize, $page, [
+            'query' => $request->toArray(),
+            'path' => '/' . $request->path(),
+        ]);
      }
 }
 
