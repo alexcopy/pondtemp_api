@@ -96,6 +96,21 @@ class CamAlarmFilesFilters
         });
         return $folder_list;
     }
+
+
+    public function paginate_folders($items, $pageSize, $page, $options=[])
+    {
+        return $this->paginate(collect($items)
+            ->sortBy(function ($file) {
+                return $file;
+            })
+            ->map(function ($file)  {
+                return [
+                    'origPath' => $file,
+
+                ];
+            }), $pageSize, $page, $options);
+     }
 }
 
 
