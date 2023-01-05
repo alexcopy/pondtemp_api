@@ -42,6 +42,22 @@ class AuthController extends Controller
 
     }
 
+    /**
+     * Refresh a token.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function refresh() {
+        return $this->createNewToken(auth()->refresh());
+    }
+    /**
+     * Get the authenticated User.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function userProfile() {
+        return response()->json(auth()->user());
+    }
 
     /**
      * Log the user out (Invalidate the token).
@@ -72,6 +88,22 @@ class AuthController extends Controller
         }
 
         return $this->respondWithToken($token);
+    }
+
+    /**
+     * Get the token array structure.
+     *
+     * @param  string $token
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function createNewToken($token){
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => 3600,
+            'user' => auth()->user()
+        ]);
     }
 
     /**
