@@ -15,21 +15,35 @@
 
 use App\Http\Controllers\FilesServer;
 
+# TODO uncomment when front end will be ready
+//$router->group(['prefix' => 'api'], function () use ($router) {
+//    $router->post('login', ['uses' => 'AuthController@login']);
+//    $router->post('register', ['uses' => 'AuthController@register']);
+//
+//    $router->group(['middleware' => 'auth'], function () use ($router) {
+//        $router->post('logout', ['uses' => 'AuthController@logout']);
+//        $router->get('pics', ['uses' => 'FilesServer@allCamFiles']);
+//        $router->get('pics/{id}', ['uses' => 'FilesServer@showFiles']);
+//        $router->get('/allfiles/', ['uses' => 'FilesServer@allCamFiles']);
+//        $router->get('/allfiles/total', ['uses' => 'FilesServer@getTotalStats']);
+//        $router->get('/allfiles/details', ['uses' => 'FilesServer@allFilesDetails']);
+//        $router->get('/showfolder/{folder}', ['uses' => 'FilesServer@allFilesInFolder']);
+//    });
+//});
 
+# TODO delete below  when front end will be ready
 $router->group(['prefix' => 'api'], function () use ($router) {
-
     $router->post('login', ['uses' => 'AuthController@login']);
     $router->post('register', ['uses' => 'AuthController@register']);
 
-    $router->group(['middleware' => 'auth'], function () use ($router) {
-        $router->post('logout', ['uses' => 'AuthController@logout']);
-        $router->get('pics', ['uses' => 'FilesServer@allCamFiles']);
-        $router->get('pics/{id}', ['uses' => 'FilesServer@showFiles']);
-        $router->get('/allfiles/', ['uses' => 'FilesServer@allCamFiles']);
-        $router->get('/allfiles/total', ['uses' => 'FilesServer@getTotalStats']);
-        $router->get('/allfiles/details', ['uses' => 'FilesServer@allFilesDetails']);
-        $router->get('/showfolder/{folder}', ['uses' => 'FilesServer@allFilesInFolder']);
-    });
+    $router->post('logout', ['uses' => 'AuthController@logout']);
+    $router->get('pics', ['uses' => 'FilesServer@allCamFiles']);
+    $router->get('pics/{id}', ['uses' => 'FilesServer@showFiles']);
+    $router->get('/allfiles/', ['uses' => 'FilesServer@allCamFiles']);
+    $router->get('/allfiles/total', ['uses' => 'FilesServer@getTotalStats']);
+    $router->get('/allfiles/details', ['uses' => 'FilesServer@allFilesDetails']);
+    $router->get('/showfolder/{folder}', ['uses' => 'FilesServer@allFilesInFolder']);
+
 });
 
 $router->get('/{any:.*}', function ($any) use ($router) {
